@@ -69,11 +69,44 @@ void UpdateRecipeBox(struct recipeTag recipe[50], int calorie_count[50], struct 
 void updAddFoodCalorieInfo(char foodItem [50], int quantity, str20 unit, int calorie_count)
 {
 // when you add (scanf), ask for the food item, quantity, and unit. (for data, refer to website in specs, we can prepare a txt file for this)
+    printf("Enter Food Item: ");
+    scanf("%c", &foodItem);
+    printf("\nEnter Quantity: ");
+    scanf("%d", &quantity);
+    printf("\nEnter Unit: ");
+    scanf("%c", &unit);
+    printf("\nEnter Calorie Count: ");
+    scanf("%d", &calorie_count);
 }
 
-void updViewFoodCalorieChart()
+void updViewFoodCalorieChart(char foodItem [50], int quantity, str20 unit, int calorie_count)
 {
 // display what you added, order: |Food Item    Quantity    Unit    Calories| (show only 10 items per screen. N = view next 10 items, X = exit)
+    int i;
+    char ch;
+    int j = 0;
+    for (i = 0; i < 50; i++);
+    {
+        for (i = 0; i < 10; i++);
+        {
+            printf("\nFood Item: %c   Quantity: %d    Unit: %c    Calories: %d", foodItem, quantity, unit, calorie_count);
+        }
+        if (i == 10)
+        {
+            printf("Input: ");
+            scanf("%c", &ch);
+            if (ch == 'N')
+            {
+                do
+                (
+                printf("\nFood Item: %c   Quantity: %d    Unit: %c    Calories: %d", foodItem, quantity, unit, calorie_count);
+                j++;
+                )
+                while (j < 10);
+            }
+            j = 0; //resets the index of j para pwede ulit-ulitin until 10 yung mga susunod na N. (or idk fix this nalang, di ko alam if gagana to)
+        }
+    }
 }
 
 void updSaveCalorieInfo()
@@ -86,10 +119,35 @@ void updLoadCalorieInfo()
 // sa file eme ulit di pa ko marunong
 }
 
-void updAddRecipe()
+void updAddRecipe(struct recipeTag recipe[50], str20 dish_name, str20 classification, int serving, struct ingredientTag ingredient[20], str70 instruc[15]) //PLS HELP
 {
 //asks user to input name of dish, classification (starter, main, dessert ONLY), number of servings, different ingredients + instructions. all names must be unique.
 //no blanks allowed, at least 1 ingredient and at least 1 instruction step per recipe. (may call AddIngredient and AddStep). after adding reipce, user go back to URB Menu.
+    int r;
+    for (r = 0; r < 50; r++)
+    {
+        printf("\nEnter Dish Name: ")
+        scanf("%c", &dish_name); //idk i think sa recipe dapat to naka store, di ko alam eh T-T"
+            if strcmp(dish_name, IDK)//i think need mo muna gumawa ng like search sa buong recipe para macompare if meron na) //okay im ngl im like bullshit here, pero strcmp the current tas yung previous one, dapat UNIQUE so if meron na same name, papaulit ng scanf
+            {
+                printf("\nThat Dish Name already exists! Reinput another");
+            }
+        printf("\nEnter Classification: ");
+        scanf("%c", &classification);
+            if (strcmp(starter, dish_name) != 0 || strcmp(main, dish_name) != 0 || strcmp(dessert, dish_name) != 0) //dapat starter, main, or dessert yung class)
+            {
+                printf("\nThat is an invalid classification! Reinput classification.");
+                scanf("%c", &classification);
+            }
+        printf("\nEnter Number of Servings: ");
+        scanf("%d", &serving);
+        //how to implement that there should be AT LEAST 1 ingredient AND instruction
+        printf("\nEnter Ingredients: ");
+        scanf("%c", &ingredient);
+        printf("\nEnter Instructions: "); //can call AddIngredient and AddStep for this function
+        scanf("%c",&instruc);
+    }
+    //bring back to URB Menu
 }
 
 void updModifyRecipe()
@@ -99,7 +157,7 @@ void updModifyRecipe()
 
 // UNDER MODIFY RECIPE, THERE ARE SUB FUNCTIONS\
 
-void updAddIngredient()
+void updAddIngredient(struct ingredientTag ingredient[20])
 {
 //new ingredient is added to current set of ingredients, user brought back to modify menu
 }
@@ -110,7 +168,7 @@ void updDeleteIngredient()
 //always brought back to modify menu after
 }
 
-void updAddStep()
+void updAddStep(str70 instruc[15])
 {
 //asked WHERE the new step will be put in. user is then asked to input the new instruction. can be inserted anywhere, make sure there are no empty/skipped steps. 
 //always brought back to modify menu after

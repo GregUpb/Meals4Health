@@ -15,7 +15,7 @@
 recommend menu.
  * based on the CCPROG2 MP Specifications (AY 2025-2026 T1).
  * Programmed by: Jacob Miguel P. Gregorio and Gabriel Angelo L. De Silva
- * Last modified: 3/1/2026
+ * Last modified: 8/1/2026
  * Version: 0.0
  * [Acknowledgements: N/A]
  */
@@ -43,7 +43,46 @@ struct recipeTag
     struct ingredientTag ingredient[20]; //list of food items
     str70 instruc[15]; //list of steps to prep and cook ingredients
     int serving; //how many ppl it is for
+    int ingcount; //how many ingredients a recipe has
+    int stepcount; //how many instructions a recipe has
 };
+
+void strwspace(char string[], int maxSize) //NOTE on maxSize value: str20 -> 21, str15 -> 16, str70 ->71
+{ 
+	int i;
+	char ch;
+	scanf("%c", &ch);
+    while (ch == '\n')
+    {
+        scanf("%c", &ch);
+    }
+
+    for (i = 0; i < maxSize - 1 && ch != '\n'; i++)
+    {
+        string[i] = ch;
+	    scanf("%c", &ch);
+    }
+    string[i] = '\0'; 
+    while (ch != '\n') 
+    {
+    scanf("%c", &ch);
+    }
+
+}
+
+int hanapinIndex(struct recipeTag recipe[], int recipeCount, char target[])
+{
+    int i, foundIndex = -1;
+    for (i = 0; i < recipeCount && foundIndex == -1; i++) 
+    {
+        if (strcmp(recipe[i].dish_name, target) == 0) 
+        {
+            foundIndex = i;
+        }
+    }
+
+    return foundIndex;
+}
 
 int login(str15 user, str15 pass)
 { //For Update Recipe Box Access
@@ -66,7 +105,7 @@ void UpdateRecipeBox(struct recipeTag recipe[50], int calorie_count[50], struct 
 
 // FUNCTIONS UNDER "UPDATE RECIPE BOX" FUNCTION
 
-void updAddFoodCalorieInfo(char foodItem [50], int quantity, str20 unit, int calorie_count)
+void updAddFoodCalorieInfo(char foodItem [50], int quantity, str20 unit, int calorie_count) // struct ang param
 {
 // when you add (scanf), ask for the food item, quantity, and unit. (for data, refer to website in specs, we can prepare a txt file for this)
     printf("Enter Food Item: ");
@@ -74,7 +113,7 @@ void updAddFoodCalorieInfo(char foodItem [50], int quantity, str20 unit, int cal
     printf("\nEnter Quantity: ");
     scanf("%d", &quantity);
     printf("\nEnter Unit: ");
-    scanf("%c", &unit);
+    scanf("%c", &unit); //use strwspace func
     printf("\nEnter Calorie Count: ");
     scanf("%d", &calorie_count);
 }
@@ -98,10 +137,10 @@ void updViewFoodCalorieChart(char foodItem [50], int quantity, str20 unit, int c
             if (ch == 'N')
             {
                 do
-                (
+                {
                 printf("\nFood Item: %c   Quantity: %d    Unit: %c    Calories: %d", foodItem, quantity, unit, calorie_count);
                 j++;
-                )
+                }
                 while (j < 10);
             }
             j = 0; //resets the index of j para pwede ulit-ulitin until 10 yung mga susunod na N. (or idk fix this nalang, di ko alam if gagana to)
@@ -126,15 +165,15 @@ void updAddRecipe(struct recipeTag recipe[50], str20 dish_name, str20 classifica
     int r;
     for (r = 0; r < 50; r++)
     {
-        printf("\nEnter Dish Name: ")
+        printf("\nEnter Dish Name: ");
         scanf("%c", &dish_name); //idk i think sa recipe dapat to naka store, di ko alam eh T-T"
-            if strcmp(dish_name, IDK)//i think need mo muna gumawa ng like search sa buong recipe para macompare if meron na) //okay im ngl im like bullshit here, pero strcmp the current tas yung previous one, dapat UNIQUE so if meron na same name, papaulit ng scanf
+            if (strcmp(dish_name, "IDK") == 0)//i think need mo muna gumawa ng like search sa buong recipe para macompare if meron na) //okay im ngl im like bullshit here, pero strcmp the current tas yung previous one, dapat UNIQUE so if meron na same name, papaulit ng scanf
             {
                 printf("\nThat Dish Name already exists! Reinput another");
             }
         printf("\nEnter Classification: ");
         scanf("%c", &classification);
-            if (strcmp(starter, dish_name) != 0 || strcmp(main, dish_name) != 0 || strcmp(dessert, dish_name) != 0) //dapat starter, main, or dessert yung class)
+            if (strcmp("starter", dish_name) != 0 || strcmp("main", dish_name) != 0 || strcmp("dessert", dish_name) != 0) //dapat starter, main, or dessert yung class)
             {
                 printf("\nThat is an invalid classification! Reinput classification.");
                 scanf("%c", &classification);
@@ -157,21 +196,42 @@ void updModifyRecipe()
 
 // UNDER MODIFY RECIPE, THERE ARE SUB FUNCTIONS\
 
-void updAddIngredient(struct ingredientTag ingredient[20])
+void updAddIngredient(struct recipeTag recipe[], int recipeCount)  //recipeCount will be declared in main and WILL be used in AddRecipe
+
 {
 //new ingredient is added to current set of ingredients, user brought back to modify menu
+int ingslot = recipe[recipeCount].ingcount;
+printf("\nEnter the Quantity: ");
+scanf("%lf",&recipe[recipeCount].ingredient[ingslot].quantity);
+printf("\n-> Successfully saved: %lf \n", recipe[recipeCount].ingredient[ingslot].quantity);
+
+printf("\nEnter the Unit: ");
+strwspace(recipe[recipeCount].ingredient[ingslot].unit,16);
+printf("\n-> Successfully saved: %s \n", recipe[recipeCount].ingredient[ingslot].unit);
+
+printf("\nEnter the Item Name: ");
+strwspace(recipe[recipeCount].ingredient[ingslot].item,21);
+printf("\n-> Successfully saved: %s \n", recipe[recipeCount].ingredient[ingslot].item);
+
+recipe[recipeCount].ingcount++;
 }
 
-void updDeleteIngredient()
+void updDeleteIngredient(struct recipeTag recipe[], int recipeCount)
 {
 //allows the user to select which existing ingredients to delete. (input could be number 1 until no. of ingredients he has). cannot delete if only 1 ingredient left.
 //always brought back to modify menu after
+    
 }
 
-void updAddStep(str70 instruc[15])
+void updAddStep(struct recipeTag recipe[], int recipeCount)
 {
 //asked WHERE the new step will be put in. user is then asked to input the new instruction. can be inserted anywhere, make sure there are no empty/skipped steps. 
 //always brought back to modify menu after
+    int stepslot = recipe[recipeCount].stepcount;
+    printf("\nEnter the Instrcution: ");
+    strwspace(recipe[recipeCount].instruc[stepslot],16);
+    printf("\n-> Successfully saved: %s \n", recipe[recipeCount].instruc[stepslot]);
+    recipe[recipeCount].stepcount++;
 }
 
 void updDeleteStep()
@@ -188,17 +248,74 @@ void updReturnToURBM() // URBM (Update Recipe Box Menu)
 
 // end of modify recipe sub-functions
 
-void updDeleteRecipe()
+void updDeleteRecipe(struct recipeTag recipe[], int *recipeCount)
 {
 //list of all recipes displayed in ALPHABETICAL order (call ListRecipeTitles), user inputs name of dish to delete
 //display "Recipe is not in the list” if the input is not strcmp=0 with the name of the dish
 //when a recipe is deleted, everything under it is also deleted (ingredients + instructions etc)
+    str20 deltarget;
+    int i,j, index; 
+    if (*recipeCount == 0)
+    {
+    printf("\nThe Recipe Box is empty. Nothing to delete!");
+    }
+    else
+    {
+        ListRecipeTitles(recipe,*recipeCount);
+        printf("\nEnter the dish name to delete: ");
+        strwspace(deltarget, 21);
+        index = hanapinIndex(recipe,*recipeCount,deltarget);
+        if (index == -1)
+        {
+            printf("\nRecipe title not found in the Recipe Box.");
+        }
+        else
+        {
+            for (i = index; i < *recipeCount - 1; i++) 
+            {
+                recipe[i] = recipe[i + 1];
+            }
+            
+            (*recipeCount)--;
+            printf("\nRecipe '%s' successfully deleted.", deltarget);
+        }
+    }   
+
 }
 
-void ListRecipeTitles() //universal function methinks
+void ListRecipeTitles(struct recipeTag recipe[], int recipeCount) //universal function methinks
 {
 //provides a list of all recipe titles in ALPHABETICAL ORDER, after the display, user is brought back to UPDATE MODE MENU.
 //order is based on ASCII value
+    struct recipeTag temp;
+    int i, j;
+
+    if (recipeCount == 0)
+    {
+        printf("\nThe Recipe Box is empty.");
+    }
+    else
+    {
+    for (i = 0; i < recipeCount - 1; i++)
+    {
+        for (j = 0; j < recipeCount - i - 1; j++)
+        {
+            if (strcmp(recipe[j].dish_name,recipe[j+1].dish_name) > 0)
+            {
+                temp = recipe[j];
+                recipe[j] = recipe[j+1];
+                recipe[j+1] = temp;
+            }
+        }
+    }
+
+    printf("\n------ Recipe Titles in Alphabetical ------");
+    for (i = 0; i < recipeCount; i++)
+    {
+        printf("\n%d. %s", i + 1, recipe[i].dish_name);
+    }
+
+    }
 }
 
 void updScanRecipes()
@@ -220,11 +337,49 @@ Procedure:<next line>
 : : */
 }
 
-void updSearchRecipeByTitle()
+void updSearchRecipeByTitle(struct recipeTag recipe[], int recipeCount)
 {
 //shows list of all recipes (ALPHABETICAL order, call ListRecipeTitles). then ask to type the recipe title to show respective info.
 //if title exists, show all info. 
 //bring user back to UPDATE MODE MENU
+    str20 query;
+    int j, index; 
+
+    if (recipeCount == 0){
+        printf("\nRecipe Box is empty");
+    }
+
+    else
+    {
+        ListRecipeTitles(recipe, recipeCount);
+        printf("\nFor more infomation, enter the Recipe you want to view: ");
+        strwspace(query,21);
+
+        index = hanapinIndex(recipe,recipeCount,query);
+
+        if (index == -1)
+        {
+        printf("\nRecipe title not found in the Recipe Box.\n");
+        }
+    
+        else
+        {
+            printf("\n------ Recipe Information ------");
+            printf("\nDish Name: %s", recipe[index].dish_name);
+            printf("\nClassification: %s", recipe[index].classification);
+            printf("\nServings: %d", recipe[index].serving);
+            printf("\nIngredients: ");
+            for (j = 0; j < recipe[index].ingcount; j++)
+            {
+                printf("\n- %lf %s of %s", recipe[index].ingredient[j].quantity, recipe[index].ingredient[j].unit, recipe[index].ingredient[j].item);
+            }
+            printf("\nInstructions: ");
+            for (j = 0; j < recipe[index].stepcount; j++)
+            {
+            printf("%d. %s\n", j + 1, recipe[index].instruc[j]);
+            }
+        }  
+    }
 }
 
 void updExportRecipes()
@@ -277,13 +432,48 @@ void accSearchRecipeByTitle()
 //list of all recipe titles (ALPHABETICAL ORDER, call ListRecipeTitles)
 }
 
-void accGenerateShoppingList()
+void accGenerateShoppingList(struct recipeTag recipe[], int recipeCount)
 {
 //show list of all recipe titles (call ListRecipeTitles), asks user which recipe to generate a shopping list for.
 //user also asked how many people they will cook for.
 //*Recomputation may be needed based on number of servings of the recipe. (basically like if binago no. of people, do the recompute)
 //display all on screen, user then brought back to ACCESS MODE MENU.
+    str20 query;
+    int j, index, targetServ;
+    double ratio;
+    if (recipeCount == 0)
+    {
+        printf("\nThe Recipe Box is empty. Nothing to shop for!");
+    }
+    else
+    {
+        ListRecipeTitles(recipe, recipeCount);
+        printf("\nEnter the Recipe for your shopping list: ");
+        strwspace(query,21);
+        index = hanapinIndex(recipe,recipeCount,query);
+        if (index == -1)
+        {
+        printf("\nRecipe title not found in the Recipe Box.\n");
+        }
+       else
+        {
+            printf("\nOriginal recipe serves: %d", recipe[index].serving);
+            printf("\nHow many servings do you need to cook? ");
+            scanf("%d", &targetServ);
+
+            ratio = (double)targetServ / recipe[index].serving; //uses typecasting to make targetServ into double
+
+            printf("\n--- Shopping List for %s (%d servings) ---", recipe[index].dish_name, targetServ);
+            
+            for (j = 0; j < recipe[index].ingcount; j++)
+                {
+                   printf("\n- %lf %s of %s", recipe[index].ingredient[j].quantity * ratio, recipe[index].ingredient[j].unit, recipe[index].ingredient[j].item);
+                }
+            }
+    }  
 }
+    
+
 
 void accScanRecipesByIngredients()
 {

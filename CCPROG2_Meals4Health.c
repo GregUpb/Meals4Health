@@ -37,15 +37,32 @@ struct ingredientTag
     str20 item; //Pangalan ng ingredient
 };
 
+struct FoodItemTag
+{
+    double quantity; //amount in units
+    str15 unit; //grams, cups, teaspoon, etc.
+    str20 item; //Pangalan ng ingredient ++ w/ space
+    int calorieCount; //ilang calories
+
+};
+
 struct recipeTag
 {
-    str20 dish_name, classification; //classification must be starter, main, or dessert ONLY
+    str20 dish_name, classification; //classification must be starter, main, or dessert ONLY && dish_name ++ w/ space
     struct ingredientTag ingredient[20]; //list of food items
-    str70 instruc[15]; //list of steps to prep and cook ingredients
+    str70 instruc[15]; //list of steps to prep and cook ingredients ++ w/ space
     int serving; //how many ppl it is for
     int ingcount; //how many ingredients a recipe has
     int stepcount; //how many instructions a recipe has
 };
+
+//Function Prototypes
+void ListRecipeTitles(struct recipeTag recipe[], int recipeCount);
+void updAddIngredient(struct recipeTag recipe[], int TargetIndex);
+void updDeleteIngredient(struct recipeTag recipe[], int TargetIndex);
+void updAddStep(struct recipeTag recipe[], int TargetIndex);
+void updDeleteStep(struct recipeTag recipe[], int TargetIndex);
+void updReturnToURBM();
 
 void strwspace(char string[], int maxSize) //NOTE on maxSize value: str20 -> 21, str15 -> 16, str70 ->71
 { 
@@ -105,45 +122,42 @@ void UpdateRecipeBox(struct recipeTag recipe[50], int calorie_count[50], struct 
 
 // FUNCTIONS UNDER "UPDATE RECIPE BOX" FUNCTION
 
-void updAddFoodCalorieInfo(char foodItem [50], int quantity, str20 unit, int calorie_count) // struct ang param
+void updAddFoodCalorieInfo(struct FoodItemTag fooditem[], int *fooditemCount) // struct ang param
 {
 // when you add (scanf), ask for the food item, quantity, and unit. (for data, refer to website in specs, we can prepare a txt file for this)
     printf("Enter Food Item: ");
-    scanf("%c", &foodItem);
+    strwspace(fooditem[*fooditemCount].item, 21);
     printf("\nEnter Quantity: ");
-    scanf("%d", &quantity);
+    scanf("%lf", &fooditem[*fooditemCount].quantity);
     printf("\nEnter Unit: ");
-    scanf("%c", &unit); //use strwspace func
+    strwspace(fooditem[*fooditemCount].unit, 16);//use strwspace func
     printf("\nEnter Calorie Count: ");
-    scanf("%d", &calorie_count);
+    scanf("%d", &fooditem[*fooditemCount].calorieCount);
+    (*fooditemCount)++;
 }
 
-void updViewFoodCalorieChart(char foodItem [50], int quantity, str20 unit, int calorie_count)
+void updViewFoodCalorieChart(struct FoodItemTag fooditem[], int fooditemCount)
 {
 // display what you added, order: |Food Item    Quantity    Unit    Calories| (show only 10 items per screen. N = view next 10 items, X = exit)
     int i;
     char ch;
-    int j = 0;
-    for (i = 0; i < 50; i++);
+    int flag = 0;
+
+    if (fooditemCount == 0) {
+        printf("\nNo food items to display.\n");
+        return;
+    }
+
+    for (i = 0; i < fooditemCount && flag == 0; i++)
     {
-        for (i = 0; i < 10; i++);
+        printf("\nFood Item: %s   Quantity: %.2lf    Unit: %s    Calories: %d", fooditem[i].item, fooditem[i].quantity, fooditem[i].unit, fooditem[i].calorieCount);
+        if ((i + 1) % 10 == 0 && (i + 1) < fooditemCount)
         {
-            printf("\nFood Item: %c   Quantity: %d    Unit: %c    Calories: %d", foodItem, quantity, unit, calorie_count);
-        }
-        if (i == 10)
-        {
-            printf("Input: ");
-            scanf("%c", &ch);
-            if (ch == 'N')
-            {
-                do
-                {
-                printf("\nFood Item: %c   Quantity: %d    Unit: %c    Calories: %d", foodItem, quantity, unit, calorie_count);
-                j++;
-                }
-                while (j < 10);
+            printf("\nContinue? (N for Next or X to exit):  ");
+            scanf(" %c", &ch);
+            if (ch == 'X' || ch == 'x'){
+                flag = 1;
             }
-            j = 0; //resets the index of j para pwede ulit-ulitin until 10 yung mga susunod na N. (or idk fix this nalang, di ko alam if gagana to)
         }
     }
 }
@@ -156,190 +170,94 @@ void updSaveCalorieInfo()
 void updLoadCalorieInfo()
 {
 // sa file eme ulit di pa ko marunong
+
 }
 
-void updAddRecipe(struct recipeTag recipe[50], str20 recipeTag->dish_name, str20 recipeTag->classification, int recipeTag->serving, struct ingredientTag ingredient[20], str70 recipeTag->instruc[15]) //PLS HELP
+void updAddRecipe(struct recipeTag recipe[50], struct ingredientTag ingredient[20], int *recipeCount) //PLS HELP
 {
-    int r, i;
-    for (r = 0; r < 50; r++)
-    {
-        printf("\nEnter Dish Name: ");
-        scanf("%s", recipe[r].dish_name);
-            for (i = 0; i < 50; i++)
+    int dishlist;
+    char ch;
+    recipe[*recipeCount].ingcount = 0; 
+    recipe[*recipeCount].stepcount = 0;
+    printf("\nEnter Dish Name: ");
+        strwspace(recipe[*recipeCount].dish_name,21);
+            for (dishlist = 0; dishlist < *recipeCount; dishlist++)
             {
-                if (strcmp(recipe[r].dish_name, recipe[i].dish_name) == 0)
-                printf("\nThat Dish Name already exists! Reinput another");
-                scanf("%s", recipe[r].dish_name);
+                if (strcmp(recipe[*recipeCount].dish_name, recipe[dishlist].dish_name) == 0)
+                {
+                    printf("\nThat Dish Name already exists! Reinput another: ");
+                    scanf("%s", recipe[*recipeCount].dish_name);
+                    dishlist = -1; // Reset loop to check the new name against all previous items again
+                }
             }
-                i = 0;
         printf("\nEnter Classification: ");
-        scanf("%s", recipe[r].classification);
-            if (strcmp("starter", recipe[r].classification) != 0 && strcmp("main", recipe[r].classification) != 0 && strcmp("dessert", recipe[r].classification) != 0)
+        scanf("%s", recipe[*recipeCount].classification);
+            if (strcmp("starter", recipe[*recipeCount].classification) != 0 && strcmp("main", recipe[*recipeCount].classification) != 0 && strcmp("dessert", recipe[*recipeCount].classification) != 0)
             {
                 printf("\nThat is an invalid classification! Reinput classification.");
-                scanf("%s", recipe[r].classification);
+                scanf("%s", recipe[*recipeCount].classification);
             }
         printf("\nEnter Number of Servings: ");
-        scanf("%d", &serving);
+        scanf("%d", &recipe[*recipeCount].serving);
         //how to implement that there should be AT LEAST 1 ingredient AND instruction
-        printf("\nEnter Ingredients: ");
-        scanf("%s", ingredient[r]);
-        do
+        do 
         {
-            printf("\nYou need at least 1 Ingredient!\nEnter Ingredients: ");
-            strwspace(string, maxSize)
-        } while (strcmp("", ingredient[r]) == 0);
-        printf("\nEnter Instructions: "); //can call AddIngredient and AddStep for this function
-        scanf("%s", instruc[r]);
-        do
+            updAddIngredient(recipe, *recipeCount);
+            printf("\nWould you like to add another ingredient (Y/N)? ");
+            scanf(" %c",&ch); // Added space to catch leftover newlines
+        }while (ch != 'N' && ch != 'n');
+
+        do 
         {
-            printf("\nYou need at least 1 Instruction!\nEnter Instruction: ");
-            strwspace(string, maxSize)
-        } while (strcmp("", instruc[r]) == 0);
-    }
+            updAddStep(recipe, *recipeCount);
+            printf("\nWould you like to add another instruction (Y/N)? ");
+            scanf(" %c",&ch); // Added space to catch leftover newlines
+        } while (ch != 'N' && ch != 'n');
+        
     //bring back to URB Menu
+    (*recipeCount)++; // Increment the total recipe count!
 }
 
-void updModifyRecipe(struct recipeTag recipe[50], str20 recipeTag->dish_name) //list of all recipe titles will be displayed in ALPHABETICAL order (call ListRecipeTitles). user inputs name of dish to modify. user is then asked which info will be changed.
+void updModifyRecipe(struct recipeTag recipe[50],int recipeCount) 
+/*list of all recipe titles will be displayed in ALPHABETICAL order (call ListRecipeTitles). 
+user inputs name of dish to modify. user is then asked which info will be changed.*/
 {
-printf("\n");
-ListRecipeTitles(recipeTag recipe, recipeCount);
-int d;
+int nChosenRecipe;
 struct recipeTag tempDish;
-char temp;
+char option;
+printf("\n");
+ListRecipeTitles(recipe, recipeCount);
 printf("\nInput Dish Name to modify: ");
-scanf("%s", &recipeTag->tempDish);
-for (d = 0; d < 50; d++)
-            {
-                if (strcmp(recipe[j].dish_name, recipe[d].dish_name) == 0) //little unsure sa index na j since sa ListRecipeTitles j ginamit and the dish name it's representing here is yung nasa original list
-                printf("\nWhich would you like to modify?\n[1]Add Ingredient | [2]Delete Ingredient | [3]Add Step | [4]Delete Step | [R]Return To Menu\nInput: ");
-                scanf("%s", &temp);
-                if (temp == "1")
-                {
-                    updAddIngredient(recipeTag recipe, recipeCount);
-                }
+strwspace(tempDish.dish_name,21);
+nChosenRecipe = hanapinIndex(recipe, recipeCount, tempDish.dish_name);
+if (nChosenRecipe != -1)
+{
+    printf("\nWhich would you like to modify?\n[1]Add Ingredient | [2]Delete Ingredient | [3]Add Step | [4]Delete Step | [R]Return To Menu\nInput: ");
+    scanf("%c", &option);
 
-                if (temp == "2")
-                {
-                    updDeleteIngredient(recipeTag recipe, recipeCount);
-                }
-
-                if (temp == "3")
-                {
-                    updAddStep(recipeTag recipe, recipeCount);
-                }
-
-                if (temp == "4")
-                {
-                    updDeleteStep(recipeTag recipe, recipeCount);
-                }
-
-                if (temp == "R")
-                {
-                    updReturnToURBM(); // wala pa function
-                }
-            }
-                d = 0;
-                temp = 0;
+    switch (option)
+    {
+    case '1':
+        updAddIngredient(recipe, nChosenRecipe);
+        break;
+    case '2':
+        updDeleteIngredient(recipe, nChosenRecipe);
+        break;
+    case '3':
+        updAddStep(recipe, nChosenRecipe);
+        break;
+    case '4':
+        updDeleteStep(recipe, nChosenRecipe);
+        break;
+    case 'R':
+        updReturnToURBM(); // wala pa function
+        break;
+    }
+   
+}
 }
 
 // UNDER MODIFY RECIPE, THERE ARE SUB FUNCTIONS\
-
-void updAddIngredient(struct recipeTag recipe[], int recipeCount)  //recipeCount will be declared in main and WILL be used in AddRecipe
-
-{
-//new ingredient is added to current set of ingredients, user brought back to modify menu
-int ingslot = recipe[recipeCount].ingcount;
-printf("\nEnter the Quantity: ");
-scanf("%lf",&recipe[recipeCount].ingredient[ingslot].quantity);
-printf("\n-> Successfully saved: %lf \n", recipe[recipeCount].ingredient[ingslot].quantity);
-
-printf("\nEnter the Unit: ");
-strwspace(recipe[recipeCount].ingredient[ingslot].unit,16);
-printf("\n-> Successfully saved: %s \n", recipe[recipeCount].ingredient[ingslot].unit);
-
-printf("\nEnter the Item Name: ");
-strwspace(recipe[recipeCount].ingredient[ingslot].item,21);
-printf("\n-> Successfully saved: %s \n", recipe[recipeCount].ingredient[ingslot].item);
-
-recipe[recipeCount].ingcount++;
-}
-
-void updDeleteIngredient(struct recipeTag recipe[], int targetIndex) //based off DeleteRecipe baka may mali
-{
-//allows the user to select which existing ingredients to delete. (input could be number 1 until no. of ingredients he has). cannot delete if only 1 ingredient left.
-//always brought back to modify menu after
-if (recipe[targetIndex].ingcount <= 1)
-    {
-        printf("\nUnable to delete ingredient.");
-        //bring to urb menu
-    }
-else
-    {
-        int i, delindex;
-        for (i = 0; i < recipe[targetIndex].ingcount; i++)
-        {
-            printf("\n[%d]%lf %s %s", i + 1, recipe[targetIndex].ingredient[i].quantity, recipe[targetIndex].ingredient[i].unit, recipe[targetIndex].ingredient[i].item);
-        }
-            scanf("%d", &delindex);
-            while (delindex < 1 || delindex > recipe[targetIndex].ingcount)
-            {
-                printf("\nInvalid Ingredient.\nInput: ");
-                scanf("%d", &delindex);
-            }
-            delindex = delindex - 1;
-            printf("Successfully deleted %lf %s %s.", recipe[targetIndex].ingredient[delindex].quantity, recipe[targetIndex].ingredient[delindex].unit, recipe[targetIndex].ingredient[delindex].item);
-            for (i = delindex; i < recipe[targetIndex].ingcount - 1; i++)
-            {
-                recipe[targetIndex].ingredient[i] = recipe[targetIndex].ingredient[i + 1];
-            }
-            recipe[targetIndex].ingcount--;
-    }
-}
-
-void updAddStep(struct recipeTag recipe[], int recipeCount)
-{
-//asked WHERE the new step will be put in. user is then asked to input the new instruction. can be inserted anywhere, make sure there are no empty/skipped steps. 
-//always brought back to modify menu after
-    int stepslot = recipe[recipeCount].stepcount;
-    printf("\nEnter the Instrcution: ");
-    strwspace(recipe[recipeCount].instruc[stepslot],16);
-    printf("\n-> Successfully saved: %s \n", recipe[recipeCount].instruc[stepslot]);
-    recipe[recipeCount].stepcount++;
-}
-
-void updDeleteStep(struct recipeTag recipe[], int targetIndex) //based off DeleteRecipe baka may mali
-{
-//similar to DeleteIngredient
-//selects which existing step to delete, (input could be number 1 until no. of steps he has). cannot delete if only 1 step left.
-//always brought back to modify menu after
-if (recipe[targetIndex].stepcount <= 1)
-    {
-        printf("\nUnable to delete step.");
-        //bring to urb menu
-    }
-    else
-    {
-        int i, delindex;
-        for (i = 0; i < recipe[targetIndex].stepcount; i++)
-        {
-            printf("\n[%d] %s", i + 1, recipe[targetIndex].instruc[i]);
-        }
-        scanf("%d", &delindex);
-        while (delindex < 1 || delindex > recipe[targetIndex].stepcount)
-        {
-            printf("\nInvalid Step.\nInput: ");
-            scanf("%d", &delindex);
-        }
-        delindex = delindex - 1;
-        printf("Successfully deleted step: %s.", recipe[targetIndex].instruc[delindex]);
-        for (i = delindex; i < recipe[targetIndex].stepcount - 1; i++)
-        {
-            strcpy(recipe[targetIndex].instruc[i], recipe[targetIndex].instruc[i + 1]); 
-        }
-        recipe[targetIndex].stepcount--;
-    }
-}
 
 void updReturnToURBM() // URBM (Update Recipe Box Menu)
 {
@@ -382,6 +300,108 @@ void updDeleteRecipe(struct recipeTag recipe[], int *recipeCount)
     }   
 
 }
+
+
+void updAddIngredient(struct recipeTag recipe[], int TargetIndex)  
+//recipeCount  and TargetIndex are the same andwill be declared in main and WILL be used in AddRecipe
+{
+//new ingredient is added to current set of ingredients, user brought back to modify menu
+int ingslot = recipe[TargetIndex].ingcount;
+printf("\nEnter the Quantity: ");
+scanf("%lf",&recipe[TargetIndex].ingredient[ingslot].quantity);
+printf("\n-> Successfully saved: %lf \n", recipe[TargetIndex].ingredient[ingslot].quantity);
+
+printf("\nEnter the Unit: ");
+strwspace(recipe[TargetIndex].ingredient[ingslot].unit,16);
+printf("\n-> Successfully saved: %s \n", recipe[TargetIndex].ingredient[ingslot].unit);
+
+printf("\nEnter the Item Name: ");
+strwspace(recipe[TargetIndex].ingredient[ingslot].item,21);
+printf("\n-> Successfully saved: %s \n", recipe[TargetIndex].ingredient[ingslot].item);
+
+recipe[TargetIndex].ingcount++;
+}
+
+void updAddStep(struct recipeTag recipe[], int TargetIndex)
+{
+//asked WHERE the new step will be put in. user is then asked to input the new instruction. can be inserted anywhere, make sure there are no empty/skipped steps. 
+//always brought back to modify menu after
+    int stepslot = recipe[TargetIndex].stepcount;
+    printf("\nEnter the Instrcution: ");
+    strwspace(recipe[TargetIndex].instruc[stepslot],16);
+    printf("\n-> Successfully saved: %s \n", recipe[TargetIndex].instruc[stepslot]);
+    recipe[TargetIndex].stepcount++;
+}
+
+
+
+void updDeleteIngredient(struct recipeTag recipe[], int TargetIndex) //based off DeleteRecipe baka may mali
+{
+//allows the user to select which existing ingredients to delete. (input could be number 1 until no. of ingredients he has). cannot delete if only 1 ingredient left.
+//always brought back to modify menu after
+if (recipe[TargetIndex].ingcount <= 1)
+    {
+        printf("\nUnable to delete ingredient.");
+        //bring to urb menu
+    }
+else
+    {
+        int i, delindex;
+        for (i = 0; i < recipe[TargetIndex].ingcount; i++)
+        {
+            printf("\n[%d]%lf %s %s", i + 1, recipe[TargetIndex].ingredient[i].quantity, recipe[TargetIndex].ingredient[i].unit, recipe[TargetIndex].ingredient[i].item);
+        }
+            scanf("%d", &delindex);
+            while (delindex < 1 || delindex > recipe[TargetIndex].ingcount)
+            {
+                printf("\nInvalid Ingredient.\nInput: ");
+                scanf("%d", &delindex);
+            }
+            delindex = delindex - 1;
+            printf("Successfully deleted %lf %s %s.", recipe[TargetIndex].ingredient[delindex].quantity, recipe[TargetIndex].ingredient[delindex].unit, recipe[TargetIndex].ingredient[delindex].item);
+            for (i = delindex; i < recipe[TargetIndex].ingcount - 1; i++)
+            {
+                recipe[TargetIndex].ingredient[i] = recipe[TargetIndex].ingredient[i + 1];
+            }
+            recipe[TargetIndex].ingcount--;
+    }
+}
+
+
+
+void updDeleteStep(struct recipeTag recipe[], int TargetIndex) //based off DeleteRecipe baka may mali
+{
+//similar to DeleteIngredient
+//selects which existing step to delete, (input could be number 1 until no. of steps he has). cannot delete if only 1 step left.
+//always brought back to modify menu after
+if (recipe[TargetIndex].stepcount <= 1)
+    {
+        printf("\nUnable to delete step.");
+        //bring to urb menu
+    }
+    else
+    {
+        int i, delindex;
+        for (i = 0; i < recipe[TargetIndex].stepcount; i++)
+        {
+            printf("\n[%d] %s", i + 1, recipe[TargetIndex].instruc[i]);
+        }
+        scanf("%d", &delindex);
+        while (delindex < 1 || delindex > recipe[TargetIndex].stepcount)
+        {
+            printf("\nInvalid Step.\nInput: ");
+            scanf("%d", &delindex);
+        }
+        delindex = delindex - 1;
+        printf("Successfully deleted step: %s.", recipe[TargetIndex].instruc[delindex]);
+        for (i = delindex; i < recipe[TargetIndex].stepcount - 1; i++)
+        {
+            strcpy(recipe[TargetIndex].instruc[i], recipe[TargetIndex].instruc[i + 1]); 
+        }
+        recipe[TargetIndex].stepcount--;
+    }
+}
+
 
 void ListRecipeTitles(struct recipeTag recipe[], int recipeCount) //universal function methinks
 {
@@ -513,11 +533,7 @@ void accImportRecipes()
 //file eme ulit ughhh
 }
 
-void ListRecipeTitles()
-{
-//list of all recipe titles (ALPHABETICAL order). same as in UPDATE MODE (ig no need to use upd & acc prefixes respectively for this function)
-//after display, user brought back to ACCESS MODE MENU
-}
+
 
 void accScanRecipes()
 {

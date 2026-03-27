@@ -168,17 +168,88 @@ int login(str15 user,
     }
 }
 
-/* UpdateRecipeBox serves as the menu and handler for all Update Mode features
-   @param recipe - the master array of recipe structures
-   @param calorie_count - integer array tracking calorie counts
-   @param food_item - the master array of ingredient structures
-   Pre-condition: recipe and food_item arrays must be properly initialized in main
+/* UpdateRecipeBox serves as the main hub for the Update Mode, providing a menu to manage ingredients and recipes.
+   @param recipe - the master array of recipe struct
+   @param recipeCount - pointer to the integer tracking the number of recipes
+   @param fooditem - the master array of FoodItemTag struct
+   @param fooditemCount - pointer to the integer tracking the number of food items
+   Pre-condition: the arrays must be properly initialized in main.
 */
-void UpdateRecipeBox(struct recipeTag recipe[50], 
-    int calorie_count[50], 
-    struct ingredientTag food_item[50])
+void UpdateRecipeBox(struct recipeTag recipe[], int *recipeCount, struct FoodItemTag fooditem[], int *fooditemCount)
 {
-    // 50 recipes and 50 food items/ingredients
+    int choice;
+    do 
+    {
+        printf("\n=========================================\n");
+        printf("              GnG's Kusina               \n");
+        printf("=========================================\n"); 
+        printf("            UPDATE RECIPE BOX            \n");
+        printf("=========================================\n");
+        printf("[1] Add Food-Calorie Info\n");
+        printf("[2] View Food-Calorie Chart\n");
+        printf("[3] Save Calorie Info\n");
+        printf("[4] Load Calorie Info\n");
+        printf("[5] Add Recipe\n");
+        printf("[6] Modify Recipe\n");
+        printf("[7] Delete Recipe\n");
+        printf("[8] List Recipe Titles\n");
+        printf("[9] Scan Recipes\n");
+        printf("[10] Search Recipe by Title\n");
+        printf("[11] Export Recipes\n");
+        printf("[12] Import Recipes\n");
+        printf("[13] Return to Main Menu\n");
+        printf("=========================================\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) 
+        {
+            case 1: 
+                updAddFoodCalorieInfo(fooditem, fooditemCount); 
+                break;
+            case 2: 
+                updViewFoodCalorieChart(fooditem, *fooditemCount); 
+                break;
+            case 3: 
+                updSaveCalorieInfo(fooditem, *fooditemCount); 
+                break;
+            case 4: 
+                updLoadCalorieInfo(fooditem, fooditemCount); 
+                break;
+            case 5: 
+                updAddRecipe(recipe, recipeCount); 
+                break;
+            case 6: 
+                updModifyRecipe(recipe, *recipeCount); 
+                break;
+            case 7: 
+                updDeleteRecipe(recipe, recipeCount); 
+                break;
+            case 8: 
+                ListRecipeTitles(recipe, *recipeCount); 
+                break;
+            case 9: 
+                ScanRecipes(recipe, *recipeCount, fooditem, *fooditemCount); 
+                break;
+            case 10: 
+                SearchRecipeByTitle(recipe, *recipeCount); 
+                break;
+            case 11: 
+                updExportRecipes(recipe, *recipeCount); 
+                break;
+            case 12: 
+                ImportRecipes(recipe, recipeCount); 
+                break;
+            case 13: 
+                printf("\nReturning to Main Menu...\n");
+                *recipeCount = 0; 
+                *fooditemCount = 0;
+                break;
+            default: 
+                printf("\nInvalid option! Please try again.\n"); 
+                break;
+        }
+    } while (choice != 13);
 }
 
 // FUNCTIONS UNDER "UPDATE RECIPE BOX" FUNCTION
@@ -329,7 +400,7 @@ void updAddRecipe(struct recipeTag recipe[50],
     
     printf("\nEnter Classification: ");
     scanf("%s", recipe[*recipeCount].classification);
-        if (strcmp("starter", recipe[*recipeCount].classification) != 0 && strcmp("main", recipe[*recipeCount].classification) != 0 && strcmp("dessert", recipe[*recipeCount].classification) != 0)
+        while (strcmp("starter", recipe[*recipeCount].classification) != 0 && strcmp("main", recipe[*recipeCount].classification) != 0 && strcmp("dessert", recipe[*recipeCount].classification) != 0)
         {
             printf("\nThat is an invalid classification! Reinput classification.");
             scanf("%s", recipe[*recipeCount].classification);
@@ -362,8 +433,7 @@ void updAddRecipe(struct recipeTag recipe[50],
 
 void updModifyRecipe(struct recipeTag recipe[50], 
     int recipeCount) 
-{/*list of all recipe titles will be displayed in ALPHABETICAL order (call ListRecipeTitles). 
-user inputs name of dish to modify. user is then asked which info will be changed.*/
+{
     int nChosenRecipe;
     struct recipeTag tempDish;
     char option;
@@ -607,9 +677,10 @@ void ListRecipeTitles(struct recipeTag recipe[],
     }
 }
 
-/* updScanRecipes sorts the recipe array alphabetically and displays each dish one at a time, calculating and 
+/* ScanRecipes sorts the recipe array alphabetically and displays each dish one at a time, calculating and 
    presenting the individual ingredient calories and total recipe calories by cross-referencing the master food item array, 
    while providing an interactive menu to navigate to the next or previous recipe.
+   UPD AND ACCESS BOXES
    @param recipe - the master array of recipe struct to be viewed
    @param recipeCount - the total number of valid recipes currently stored
    @param fooditem - the master array of FoodItemTag struct used as a database to fetch calorie counts
@@ -629,7 +700,7 @@ void ListRecipeTitles(struct recipeTag recipe[],
     2. <step 2><next line>
     : :
 */
-void updScanRecipes(struct recipeTag recipe[], 
+void ScanRecipes(struct recipeTag recipe[], 
     int recipeCount, 
     struct FoodItemTag fooditem[], 
     int fooditemCount)
@@ -726,12 +797,15 @@ void updScanRecipes(struct recipeTag recipe[],
     }
 }
 
-/* updSearchRecipeByTitle presents an alphabetical list of all saved recipes, prompts the user to input a specific dish name to search for, and utilizes the hanapinIndex helper function to retrieve and print all corresponding details including classification, ingredients, and procedural steps.
+/* SearchRecipeByTitle presents an alphabetical list of all saved recipes, prompts the user to input a specific dish name to search for, 
+   and utilizes the hanapinIndex helper function to retrieve and print all corresponding details including classification, ingredients, 
+   and procedural steps.
+   UPD AND ACCESS BOXES
    @param recipe - the master array of recipe struct to search through
    @param recipeCount - the total number of valid recipes currently stored
    Pre-condition: recipeCount must be greater than or equal to 0, and the recipe array must be populated with valid data.
 */
-void updSearchRecipeByTitle(struct recipeTag recipe[], 
+void SearchRecipeByTitle(struct recipeTag recipe[], 
     int recipeCount)
 {
 //shows list of all recipes (ALPHABETICAL order, call ListRecipeTitles). then ask to type the recipe title to show respective info.
@@ -834,14 +908,16 @@ void updExportRecipes(struct recipeTag recipe[],
     }
 }
 
-/* updImportRecipes reads a formatted text file to extract recipe data into a temporary struct, cross-references the dish name 
+/* ImportRecipes reads a formatted text file to extract recipe data into a temporary struct, cross-references the dish name 
    against the existing database to handle overwrite permissions, and safely integrates the parsed data into the master array 
    while skipping over any blank lines.
+   ACCESS AND UPDATE BOXES
    @param recipe - the master array of recipe struct where the imported data will be saved
    @param recipeCount - the address of the integer tracking the total number of recipes, which will be updated as new dishes are added
    Pre-condition: The target text file must exist and strictly follow the formatting guidelines established by the export function.
 */
-void updImportRecipes(struct recipeTag recipe[], 
+
+void ImportRecipes(struct recipeTag recipe[], 
     int *recipeCount)
 {
     str20 filename;
@@ -926,17 +1002,69 @@ void updImportRecipes(struct recipeTag recipe[],
     }
 }
 
-void updReturnMainMenu()
+/* AccessRecipeBox serves as the main hub for the Access Mode, providing tools for users to view and utilize recipes.
+   @param recipe - the master array of recipe struct
+   @param recipeCount - pointer to the integer tracking the number of recipes
+   @param fooditem - the master array of FoodItemTag struct
+   @param fooditemCount - pointer to the integer tracking the number of food items
+   Pre-condition: the arrays must be properly initialized in main.
+*/
+void AccessRecipeBox(struct recipeTag recipe[], int *recipeCount, struct FoodItemTag fooditem[], int *fooditemCount)
 {
-//allows user to quit UPDATE MODE and return to MAIN MENU. information in lists should be cleared after this option.
+    int choice;
+    do 
+    {
+        printf("\n=========================================\n");
+        printf("              GnG's Kusina               \n");
+        printf("=========================================\n");
+        printf("            ACCESS RECIPE BOX            \n");
+        printf("=========================================\n");
+        printf("[1] Import Recipes\n");
+        printf("[2] List Recipe Titles\n");
+        printf("[3] Scan Recipes\n");
+        printf("[4] Search Recipe by Title\n");
+        printf("[5] Generate Shopping List\n");
+        printf("[6] Scan Recipes by Ingredient\n");
+        printf("[7] Recommend Menu\n");
+        printf("[8] Return to Main Menu\n");
+        printf("=========================================\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) 
+        {
+            case 1: 
+                ImportRecipes(recipe, recipeCount); 
+                break;
+            case 2: 
+                ListRecipeTitles(recipe, *recipeCount); 
+                break;
+            case 3: 
+                ScanRecipes(recipe, *recipeCount, fooditem, *fooditemCount); 
+                break;
+            case 4: 
+                SearchRecipeByTitle(recipe, *recipeCount);
+                break;
+            case 5: 
+                accGenerateShoppingList(recipe, *recipeCount);
+                break;
+            case 6: 
+                accScanRecipesByIngredients(recipe, *recipeCount, fooditem, *fooditemCount);
+                break;
+            case 7: 
+                accRecommendedMenu(recipe, recipeCount, fooditem, fooditemCount); 
+                break;
+            case 8: 
+                printf("\nReturning to Main Menu...\n");
+                *recipeCount = 0; 
+                *fooditemCount = 0;
+                break;
+            default: 
+                printf("\nInvalid option! Please try again.\n"); 
+                break;
+        }
+    } while (choice != 8);
 }
-
-
-void AccessRecipeBox()
-{
-    
-}
-
 /* accGenerateShoppingList displays all available recipes, prompts the user to select a dish and input a desired number of servings, 
    and calculates a scaled shopping list by multiplying the original ingredient quantities by the serving ratio.
    @param recipe - the master array of recipe struct to be searched and accessed
@@ -1110,39 +1238,167 @@ struct recipeTag temp;
     }
     }
 }
-
-void accRecommendedMenu()
+/* accRecommendedMenu asks the user to input a target calorie intake for 1 person. The program randomly 
+   chooses 1 main course from the list of recipes; if the calorie count is not enough, a starter is 
+   included, and if both are still not enough, a dessert is recommended. If there is no available course, 
+   it skips and shows a recipe of the available courses. The menu will not exceed the calorie intake, and 
+   unlisted ingredients are assumed to be 0 calories. It shows the suggested menu one at a time 
+   (starter -> main -> dessert) before returning to the Access Mode Menu.
+   @param recipe - the master array of recipe struct to pull the randomized courses from
+   @param recipeCount - the total number of valid recipes currently stored
+   @param fooditem - the master array of FoodItemTag struct used to calculate and verify the calorie limits
+   @param fooditemCount - the total number of valid food items currently stored
+   Pre-condition: The recipe array must contain valid dishes, and the generateRandomValue helper function must be defined.
+*/
+void accRecommendedMenu(struct recipeTag recipe[], int recipeCount, struct FoodItemTag fooditem[], int fooditemCount)
 {
-//asks user to INPUT (scanf) a target calorie intake for 1 person.
-//program randomly chooses 1 main course from list of recipes. if calorie count of main course is not enough, a starter is also included.
-//if both are not enough, a dessert is also recommended. 
-//if there is no available course, skip and show a recipe of the available course (basically, if wala ka nilagay na starter na recipe, skip that then it will show mains and desserts)
-//menu should not exceed calorie intake. if ingredient (in recipe) is not included in list of food-calorie info, assume that the calorie count is 0. (e.g. water is an ingredient but not in food-calorie info list. water = 0 cal)
-//show recipe info for suggested menu one at a time from starter -> main -> dessert.
-//bring user back to ACCESS MODE MENU
-}
+    int i, j, k, found;
+    int targetCalorie;
+    int currentIngredientCal, recipeTotalCal;
+    int recipeCalPerPerson[50]; // since it asks for targer calorie intake of 1 person
 
-void accReturnMainMenu()
-{
-//choice to quit ACCESS MODE MENU and go back to MAIN MENU. info in the lists should be cleared after this option.
+    int mainsFiltered[50];
+    int mainCount = 0;
+    int chosenMain = -1; // not found; -1 because arrays start at index 0
+
+    int startersFiltered[50];
+    int starterCount = 0;
+    int chosenStarter = -1;
+
+    int dessertsFiltered[50];
+    int dessertCount = 0;
+    int chosenDessert = -1;
+
+    char ch;
+
+    printf("Input Target Calorie Intake: \n");
+    scanf("%d", &targetCalorie);
+
+    for (i = 0; i < recipeCount; i++)
+    {
+        recipeTotalCal = 0;
+
+        for (j = 0; j < recipe[i].ingcount; j++)
+        {
+            found = 0;
+            for (k = 0;  k < fooditemCount && found == 0; k++)
+            {
+                if(strcmp(recipe[i].ingredient[j].item, fooditem[k].item) == 0)
+                {
+                    recipeTotalCal += fooditem[k].calorieCount;
+                    found = 1;
+                }
+            }
+        }
+        recipeCalPerPerson[i] = recipeTotalCal / recipe[i].serving; //since some recipe serving sizes are for more than one person
+    }
+
+    //main
+    for (i = 0; i < recipeCount; i++)
+    {
+        if (strcmp(recipe[i].classification, "main") == 0 && recipeCalPerPerson[i] <= targetCalorie)
+        {
+            mainsFiltered[mainCount] = i; //saves the index of i into the mainList array to take note of all the mains that fit under the calorie intake
+            mainCount++;
+        }
+    }
+    if (mainCount > 0)
+    {
+        int randomIndex = generateRandomValue(0, mainCount - 1); //the upper limit of an array is -1 from the mainCount
+        chosenMain = mainsFiltered[randomIndex];
+        targetCalorie -= recipeCalPerPerson[chosenMain];
+    }
+
+    //starter
+    for (i = 0; i < recipeCount; i++)
+    {
+        if (strcmp(recipe[i].classification, "starter") == 0 && recipeCalPerPerson[i] <= targetCalorie)
+        {
+            startersFiltered[starterCount] = i; //saves the index of i into the mainList array to take note of all the starters that fit under the calorie intake
+            starterCount++;
+        }
+    }
+    if (starterCount > 0)
+    {
+        int randomIndex = generateRandomValue(0, starterCount - 1); //the upper limit of an array is -1 from the starterCount
+        chosenStarter = startersFiltered[randomIndex];
+        targetCalorie -= recipeCalPerPerson[chosenStarter];
+    }
+
+    //dessert
+    for (i = 0; i < recipeCount; i++)
+    {
+        if (strcmp(recipe[i].classification, "dessert") == 0 && recipeCalPerPerson[i] <= targetCalorie)
+        {
+            dessertsFiltered[dessertCount] = i; //saves the index of i into the mainList array to take note of all the desserts that fit under the calorie intake
+            dessertCount++;
+        }
+    }
+    if (dessertCount > 0)
+    {
+        int randomIndex = generateRandomValue(0, dessertCount - 1); //the upper limit of an array is -1 from the dessertCount
+        chosenDessert = dessertsFiltered[randomIndex];
+        targetCalorie -= recipeCalPerPerson[chosenDessert];
+    }
+
+    //display
+    printf("\nYour Recommended Menu!\n");
+
+    if (chosenStarter != -1)
+    {
+        printf("|Starter|\n");
+        printf("Dish Name: %s\n", recipe[chosenStarter].dish_name);
+        printf("Servings: %d\n", recipe[chosenStarter].serving);
+        printf("\nInput any character to view the next course: ");
+        scanf(" %c", &ch);
+    }
+
+    if (chosenMain != -1)
+    {
+        printf("|Main Course|\n");
+        printf("Dish Name: %s\n", recipe[chosenMain].dish_name);
+        printf("Servings: %d\n", recipe[chosenMain].serving);
+
+        if (chosenDessert != -1) 
+        {
+            printf("\nInput any character to view the next course: ");
+            scanf(" %c", &ch);
+        }
+    }
+
+    if (chosenDessert != -1)
+    {
+        printf("|Dessert|\n");
+        printf("Dish Name: %s\n", recipe[chosenDessert].dish_name);
+        printf("Servings: %d\n", recipe[chosenDessert].serving);
+    }
+
+    if (chosenStarter == -1 && chosenMain == -1 && chosenDessert == -1)
+    {
+        printf("\nNo menu combination fits the budget.\n");
+    }
 }
 
 // end of ACCESS RECIPE BOX FUNCTIONS
 int main()
 {
-    int choice = 0;
-    int exit = 0;
-    int res;
+    int choice = 0, exit = 0, res, recipeCount = 0, foodCount = 0;
     char ch;
     str15 user, pass;
-    int calorie_count[50];
+    struct recipeTag recipeList[50];
+    struct FoodItemTag foodList[50];
 
     do 
     {
-
+        printf("\n=========================================\n");
+        printf("              GnG's Kusina               \n");
+        printf("=========================================\n");
+        printf("              MEALS4HEALTH               \n");
+        printf("=========================================\n");
         printf("[1] - Update Recipe Box\n");
         printf("[2] - Access Recipe Box\n");
         printf("[3] - Exit\n");
+        printf("Enter choice: ");
 
         scanf("%d", &choice);
         scanf("%c", &ch);
@@ -1153,25 +1409,27 @@ int main()
                 res = login(user, pass);
                 if (res == 1)
                 {
-                    //insert update recipe box func call here
+                    UpdateRecipeBox(recipeList, &recipeCount, foodList, &foodCount);
                 }
                 else 
                 {
-                    printf("\nInvalid Username or Password");
+                    printf("\nInvalid username or password!\n");
                 }
                 break;
             case 2:
-                // insert function call here
+                AccessRecipeBox(recipeList, &recipeCount, foodList, &foodCount);
                 break;
             case 3:
-                printf("Maraming salamat sa paggamit ng aming aplikasyon");
+                printf("\nMaraming salamat sa paggamit ng aming aplikasyon!\n");
                 exit = 1;
                 break;
             default:
-            break;
+                printf("\nInvalid option! Please try again.\n");
+                break;
         }
 
     } 
     while (exit != 1);
+    
     return 0;
 }

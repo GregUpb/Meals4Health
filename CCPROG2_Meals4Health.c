@@ -103,10 +103,12 @@ void strwspace(char string[],
    @param fp - the file pointer currently being read from
    @param string - the character array where the file text will be stored
    @return 1 if at least one character was successfully read, and returns 0 if it hits End of File (EOF)
+   @param maxSize - the maximum number of characters allowed (including the null terminator)
    Pre-condition: fp must be successfully opened in read ("r") mode.
 */
 int fstrwspace(FILE *fp, 
-    char string[])
+    char string[], 
+    int maxSize)
 {
 	char ch;
 	int i = 0;
@@ -114,8 +116,11 @@ int fstrwspace(FILE *fp,
 	
 	while ((x = fscanf(fp, "%c", &ch)) == 1 && ch != '\n')
 	{   
+    if ( i < maxSize - 1)
+    {
         string[i] = ch;
         i++;
+    }
 	}
     string[i] = '\0';
     if (x == 1 || i > 0) // x == 1 checks if fscanf read a char, and i > 0 is a failsafe when it reaches EOF
@@ -210,12 +215,13 @@ void updViewFoodCalorieChart(struct FoodItemTag fooditem[],
 
     if (fooditemCount == 0) {
         printf("\nNo food items to display.\n");
-        return;
     }
-
-    for (i = 0; i < fooditemCount && flag == 0; i++)
+    else
     {
-        printf("\nFood Item: %s   Quantity: %.2lf    Unit: %s    Calories: %d", fooditem[i].item, fooditem[i].quantity, fooditem[i].unit, fooditem[i].calorieCount);
+        for (i = 0; i < fooditemCount && flag == 0; i++)
+    {
+        printf("\nFood Item: %-20s\tQuantity: %-8.2lf\tUnit: %-15s\tCalories: %d", fooditem[i].item, fooditem[i].quantity, fooditem[i].unit, fooditem[i].calorieCount);
+        
         if ((i + 1) % 10 == 0 && (i + 1) < fooditemCount)
         {
             printf("\nContinue? (N for Next or X to exit):  ");
@@ -224,7 +230,7 @@ void updViewFoodCalorieChart(struct FoodItemTag fooditem[],
                 flag = 1;
             }
         }
-        else
+        else if ((i + 1) == fooditemCount)
         {
             printf("\nPress X to exit the view: ");
             scanf(" %c", &ch);
@@ -233,6 +239,7 @@ void updViewFoodCalorieChart(struct FoodItemTag fooditem[],
             }
         }
     }
+    }   
 }
 
 /* updSaveCalorieInfo exports the current list of food items and their calorie counts into a specified text file.
@@ -293,7 +300,7 @@ void updLoadCalorieInfo(struct FoodItemTag fooditem[],
     if (fp = fopen(filename, "r"))
     {
         *fooditemCount = 0;
-        while (fstrwspace(fp, fooditem[*fooditemCount].item) == 1)
+        while (fstrwspace(fp, fooditem[*fooditemCount].item, 21) == 1)
         {
             fscanf(fp, "%lf %s %d", &fooditem[*fooditemCount].quantity, fooditem[*fooditemCount].unit, &fooditem[*fooditemCount].calorieCount);
             fscanf(fp, "%c", &temp); 
@@ -410,6 +417,10 @@ void updModifyRecipe(struct recipeTag recipe[50],
             }
         } while (option != 'R' && option != 'r'); 
     }
+    else
+    {
+        printf("Whoops! %s doesnt exist!", tempDish.dish_name);
+    }
 }
 
 /* updDeleteRecipe prompts the user for a recipe title, searches for it, and removes it from the database while shifting the remaining elements.
@@ -424,7 +435,7 @@ void updDeleteRecipe(struct recipeTag recipe[],
 //display "Recipe is not in the list” if the input is not strcmp==0 with the name of the dish
 //when a recipe is deleted, everything under it is also deleted (ingredients + instructions etc)
     str20 deltarget;
-    int i,j, index; 
+    int i, index; 
     if (*recipeCount == 0)
     {
     printf("\nThe Recipe Box is empty. Nothing to delete!");
@@ -642,8 +653,7 @@ void ScanRecipes(struct recipeTag recipe[],
     int fooditemCount)
 {
 
-    struct recipeTag temp;
-    int i, j, k, found;
+    int i, k, found;
     char ch;
     int currentIndex = 0;
     int currentIngredientCal = 0;
@@ -680,6 +690,7 @@ void ScanRecipes(struct recipeTag recipe[],
                 totalCal += currentIngredientCal; //adding to totalcal
             }
             // display portion
+            printf("\n=========================================\n");
             printf("\n%s %d Servings %d Calories\n", recipe[currentIndex].dish_name, recipe[currentIndex].serving, totalCal);
             printf("Ingredients:\n");
             for (i = 0; i < recipe[currentIndex].ingcount; i++)
@@ -695,7 +706,7 @@ void ScanRecipes(struct recipeTag recipe[],
                         found = 1;
                     }
                 }
-                printf("%.2lf %s %s %d\n", recipe[currentIndex].ingredient[i].quantity, recipe[currentIndex].ingredient[i].unit, recipe[currentIndex].ingredient[i].item, currentIngredientCal);    
+                printf("%.2lf %s %s | %d Calories\n", recipe[currentIndex].ingredient[i].quantity, recipe[currentIndex].ingredient[i].unit, recipe[currentIndex].ingredient[i].item, currentIngredientCal);    
             }
 
             printf("Procedures:\n");
@@ -703,7 +714,7 @@ void ScanRecipes(struct recipeTag recipe[],
             {
                 printf("%d. %s\n", 1+i, recipe[currentIndex].instruc[i]);
             }
-        
+        printf("\n=========================================\n");
         printf("N = Next, P = Previous, X = Exit\nInput: "); //if user chooses X or x, the while loop stops and acts as the exit page
         scanf(" %c", &ch);
         if (ch == 'N' || ch == 'n')
@@ -873,7 +884,7 @@ void ImportRecipes(struct recipeTag recipe[],
 
     if (fp = fopen(filename, "r"))
     {
-        while (fstrwspace(fp, temp.dish_name) == 1)
+        while (fstrwspace(fp, temp.dish_name,21) == 1)
         {
             isBlank = 0;
 
@@ -891,21 +902,21 @@ void ImportRecipes(struct recipeTag recipe[],
                 {
                     fscanf(fp, "%lf %s", &temp.ingredient[j].quantity, temp.ingredient[j].unit);
                     fscanf(fp, "%c", &cTemp); 
-                    fstrwspace(fp, temp.ingredient[j].item);
+                    fstrwspace(fp, temp.ingredient[j].item,21);
                 }
                 //Read Steps
                 fscanf(fp, "%s %d", sTemp, &temp.stepcount);
                 fscanf(fp, "%c", &cTemp);
                 for (j = 0; j < temp.stepcount; j++)
                 {
-                    fstrwspace(fp, temp.instruc[j]);
+                    fstrwspace(fp, temp.instruc[j],71);
                 }
                 index = hanapinIndex(recipe, *recipeCount, temp.dish_name);
 
                 if (index != -1)
                 {
                     printf("\nRecipe '%s' already exists. Overwrite? (Y/N): ", temp.dish_name);
-                    scanf("%c", &overwriteChoice);
+                    scanf(" %c", &overwriteChoice);
 
                     if (overwriteChoice == 'Y' || overwriteChoice == 'y')
                     {
@@ -1228,7 +1239,7 @@ void accRecommendedMenu(struct recipeTag recipe[], int recipeCount, struct FoodI
 {
     int i, j, k, found;
     int targetCalorie;
-    int currentIngredientCal, recipeTotalCal;
+    int recipeTotalCal;
     int recipeCalPerPerson[50]; // since it asks for targer calorie intake of 1 person
 
     int mainsFiltered[50];

@@ -1,10 +1,8 @@
 /******************************************************************************
- * This is to certify that this project is my own work, based on my personal
- * efforts in studying and applying the concepts learned. I have
- * constructed the functions and their respective algorithms and
- * corresponding code by myself. The program was run, tested, and debugged
- * by my own efforts. I further certify that I have not copied in part or
- * whole or otherwise plagiarized the work of other students and/or persons.
+This is to certify that this project is my own work, based on my personal efforts in studying and applying the concepts learned. 
+I have constructed the functions and their respective algorithms and corresponding code by myself. The program was run, tested, 
+and debugged by my own efforts. I further certify that I have not copied in part or whole or otherwise plagiarized the work of
+other students and/or persons, nor did I employ the use of AI in any part of the deliverable.
  *
  * Jacob Miguel P. Gregorio, DLSU ID# 12504157
  * Gabriel Angelo L. De Silva, DLSU ID# 12507083
@@ -13,10 +11,10 @@
  /*
  * Description: A repository of cooking recipes and to provide tools to add recipes, generate shopping list, and to
 recommend menu.
- * based on the CCPROG2 MP Specifications (AY 2025-2026 T1).
+ * based on the CCPROG2 MP Specifications (AY 2025-2026 T2).
  * Programmed by: Jacob Miguel P. Gregorio and Gabriel Angelo L. De Silva
- * Last modified: 3/16/2026
- * Version: 0.0
+ * Last modified: 3/30/2026
+ * Version: 1.0
  * [Acknowledgements: N/A]
  */
 /* Notes:
@@ -167,9 +165,9 @@ int login(str15 user,
     str15 pass)
 { 
     printf("\nEnter Username: ");
-    scanf("%s", user);
+    scanf("%15s", user);
     printf("\nEnter Password: ");
-    scanf("%s", pass);
+    scanf("%15s", pass);
     if (strcmp("admin",user)== 0 && strcmp("ad1234",pass) == 0){
         return 1;
     }
@@ -190,15 +188,22 @@ int login(str15 user,
 void updAddFoodCalorieInfo(struct FoodItemTag fooditem[], 
     int *fooditemCount) 
 {
-    printf("Enter Food Item: ");
-    strwspace(fooditem[*fooditemCount].item, 21);
-    printf("\nEnter Quantity: ");
-    scanf("%lf", &fooditem[*fooditemCount].quantity);
-    printf("\nEnter Unit: ");
-    strwspace(fooditem[*fooditemCount].unit, 16);//use strwspace func
-    printf("\nEnter Calorie Count: ");
-    scanf("%d", &fooditem[*fooditemCount].calorieCount);
-    (*fooditemCount)++;
+    if (*fooditemCount >= 50) 
+    {
+        printf("\nFood Calorie Chart is full (Maximum 50 items)!\n");
+    }
+    else
+    {
+        printf("Enter Food Item: ");
+        strwspace(fooditem[*fooditemCount].item, 21);
+        printf("\nEnter Quantity: ");
+        scanf("%lf", &fooditem[*fooditemCount].quantity);
+        printf("\nEnter Unit: ");
+        strwspace(fooditem[*fooditemCount].unit, 16);//use strwspace func
+        printf("\nEnter Calorie Count: ");
+        scanf("%d", &fooditem[*fooditemCount].calorieCount);
+        (*fooditemCount)++;
+    }
 }
 
 /* updViewFoodCalorieChart displays the list of food items and their calorie information by sets of ten.
@@ -300,7 +305,7 @@ void updLoadCalorieInfo(struct FoodItemTag fooditem[],
     if (fp = fopen(filename, "r"))
     {
         *fooditemCount = 0;
-        while (fstrwspace(fp, fooditem[*fooditemCount].item, 21) == 1)
+        while (*fooditemCount < 50 && fstrwspace(fp, fooditem[*fooditemCount].item, 21) == 1)
         {
             fscanf(fp, "%lf %s %d", &fooditem[*fooditemCount].quantity, fooditem[*fooditemCount].unit, &fooditem[*fooditemCount].calorieCount);
             fscanf(fp, "%c", &temp); 
@@ -325,45 +330,53 @@ void updAddRecipe(struct recipeTag recipe[50],
     int *recipeCount) //PLS HELP
 {
     char leftover;
-    recipe[*recipeCount].ingcount = 0; 
-    recipe[*recipeCount].stepcount = 0;
 
-    printf("\nEnter Dish Name: ");
-    strwspace(recipe[*recipeCount].dish_name,21);
-    while (hanapinIndex(recipe, *recipeCount, recipe[*recipeCount].dish_name) != -1)
-        {
-            printf("\nThat Dish Name already exists! Reinput another: ");
-            strwspace(recipe[*recipeCount].dish_name, 21); 
-        }
-    
-    printf("\nEnter Classification: ");
-    scanf("%s", recipe[*recipeCount].classification);
-        while (strcmp("starter", recipe[*recipeCount].classification) != 0 && strcmp("main", recipe[*recipeCount].classification) != 0 && strcmp("dessert", recipe[*recipeCount].classification) != 0)
-        {
-            printf("\nThat is an invalid classification! Reinput another: ");
-            scanf("%s", recipe[*recipeCount].classification);
-        }
-    printf("\nEnter Number of Servings: ");
-    scanf("%d", &recipe[*recipeCount].serving);
-    printf("\nNow entering the Ingredient zone!");
-    do 
+    if (*recipeCount >= 50) 
     {
-        updAddIngredient(recipe, *recipeCount);
-        printf("\nWould you like to add another ingredient (Y/N)? ");
-        scanf(" %c",&leftover);
-    }while (leftover != 'N' && leftover != 'n');
+        printf("\nRecipe Box is full (Maximum 50 recipes)!\n");
+    }
 
-    printf("\nNow entering the Instruction zone!");
-    do 
-    {
-        updAddStep(recipe, *recipeCount);
-        printf("\nWould you like to add another instruction (Y/N)? ");
-        scanf(" %c",&leftover); 
+    else
+    {   
+        recipe[*recipeCount].ingcount = 0; 
+        recipe[*recipeCount].stepcount = 0;
+        printf("\nEnter Dish Name: ");
+        strwspace(recipe[*recipeCount].dish_name,21);
+        while (hanapinIndex(recipe, *recipeCount, recipe[*recipeCount].dish_name) != -1)
+            {
+                printf("\nThat Dish Name already exists! Reinput another: ");
+                strwspace(recipe[*recipeCount].dish_name, 21); 
+            }
         
-    } while (leftover != 'N' && leftover != 'n');
-        
-    //bring back to URB Menu
-    (*recipeCount)++; // Increment the total recipe count
+        printf("\nEnter Classification: ");
+        scanf("%s", recipe[*recipeCount].classification);
+            while (strcmp("starter", recipe[*recipeCount].classification) != 0 && strcmp("main", recipe[*recipeCount].classification) != 0 && strcmp("dessert", recipe[*recipeCount].classification) != 0)
+            {
+                printf("\nThat is an invalid classification! Reinput another: ");
+                scanf("%s", recipe[*recipeCount].classification);
+            }
+        printf("\nEnter Number of Servings: ");
+        scanf("%d", &recipe[*recipeCount].serving);
+        printf("\nNow entering the Ingredient zone!");
+        do 
+        {
+            updAddIngredient(recipe, *recipeCount);
+            printf("\nWould you like to add another ingredient (Y/N)? ");
+            scanf(" %c",&leftover);
+        }while (leftover != 'N' && leftover != 'n');
+
+        printf("\nNow entering the Instruction zone!");
+        do 
+        {
+            updAddStep(recipe, *recipeCount);
+            printf("\nWould you like to add another instruction (Y/N)? ");
+            scanf(" %c",&leftover); 
+            
+        } while (leftover != 'N' && leftover != 'n');
+            
+        //bring back to URB Menu
+        (*recipeCount)++; // Increment the total recipe count
+    }
 }
 
 /* updModifyRecipe allows the user to select an existing recipe and open a sub-menu to add or delete its ingredients and steps.
@@ -474,19 +487,26 @@ void updAddIngredient(struct recipeTag recipe[],
     int TargetIndex)  
 {
     int ingslot = recipe[TargetIndex].ingcount;
-    printf("\nEnter the Ingredient Name: ");
-    strwspace(recipe[TargetIndex].ingredient[ingslot].item,21);
-    printf("\n-> Successfully saved: %s \n", recipe[TargetIndex].ingredient[ingslot].item);
+    if (recipe[TargetIndex].ingcount >= 20) 
+    {
+        printf("\nIngredient is full (Maximum 20 ingredients)!\n");
+    }
+    else
+    {
+        printf("\nEnter the Ingredient Name: ");
+        strwspace(recipe[TargetIndex].ingredient[ingslot].item,21);
+        printf("\n-> Successfully saved: %s \n", recipe[TargetIndex].ingredient[ingslot].item);
 
-    printf("\nEnter the Quantity: ");
-    scanf("%lf",&recipe[TargetIndex].ingredient[ingslot].quantity);
-    printf("\n-> Successfully saved: %lf \n", recipe[TargetIndex].ingredient[ingslot].quantity);
+        printf("\nEnter the Quantity: ");
+        scanf("%lf",&recipe[TargetIndex].ingredient[ingslot].quantity);
+        printf("\n-> Successfully saved: %lf \n", recipe[TargetIndex].ingredient[ingslot].quantity);
 
-    printf("\nEnter the Unit: ");
-    strwspace(recipe[TargetIndex].ingredient[ingslot].unit,16);
-    printf("\n-> Successfully saved: %s \n", recipe[TargetIndex].ingredient[ingslot].unit);
+        printf("\nEnter the Unit: ");
+        strwspace(recipe[TargetIndex].ingredient[ingslot].unit,16);
+        printf("\n-> Successfully saved: %s \n", recipe[TargetIndex].ingredient[ingslot].unit);
 
-    recipe[TargetIndex].ingcount++;
+        recipe[TargetIndex].ingcount++;
+    }
 }
 
 /* updAddStep prompts the user to input a new procedural instruction or step, 
@@ -498,12 +518,18 @@ void updAddIngredient(struct recipeTag recipe[],
 void updAddStep(struct recipeTag recipe[], 
     int TargetIndex)
 {
-
     int stepslot = recipe[TargetIndex].stepcount;
-    printf("\nEnter the Instruction: ");
-    strwspace(recipe[TargetIndex].instruc[stepslot],71);
-    printf("\n-> Successfully saved: %s \n", recipe[TargetIndex].instruc[stepslot]);
-    recipe[TargetIndex].stepcount++;
+    if (recipe[TargetIndex].stepcount >= 15)    
+    {
+        printf("\nInstruction is full (Maximum 15 instructions)!\n");
+    }
+    else
+    {
+        printf("\nEnter the Instruction: ");
+        strwspace(recipe[TargetIndex].instruc[stepslot],71);
+        printf("\n-> Successfully saved: %s \n", recipe[TargetIndex].instruc[stepslot]);
+        recipe[TargetIndex].stepcount++;
+    }
 }
 
 
@@ -884,7 +910,7 @@ void ImportRecipes(struct recipeTag recipe[],
 
     if (fp = fopen(filename, "r"))
     {
-        while (fstrwspace(fp, temp.dish_name,21) == 1)
+        while (*recipeCount < 50 && fstrwspace(fp, temp.dish_name,21) == 1)
         {
             isBlank = 0;
 
@@ -1027,6 +1053,8 @@ void UpdateRecipeBox(struct recipeTag recipe[], int *recipeCount, struct FoodIte
                 break;
             case 13: 
                 printf("\nReturning to Main Menu...\n");
+                *recipeCount = 0; 
+                *fooditemCount = 0;
                 break;
             default: 
                 printf("\nInvalid option! Please try again.\n"); 
@@ -1194,7 +1222,7 @@ struct recipeTag temp;
     scanf(" %c", &ch);
         if (ch == 'N' || ch == 'n')
         {
-            if (currentIndex < recipeCount - 1) 
+            if (currentIndex < matchCount - 1) 
             {
                 currentIndex++;
             } 
@@ -1382,13 +1410,14 @@ void AccessRecipeBox(struct recipeTag recipe[], int *recipeCount, struct FoodIte
         printf("            ACCESS RECIPE BOX            \n");
         printf("=========================================\n");
         printf("[1] Import Recipes\n");
-        printf("[2] List Recipe Titles\n");
-        printf("[3] Scan Recipes\n");
-        printf("[4] Search Recipe by Title\n");
-        printf("[5] Generate Shopping List\n");
-        printf("[6] Scan Recipes by Ingredient\n");
-        printf("[7] Recommend Menu\n");
-        printf("[8] Return to Main Menu\n");
+        printf("[2] Load Calorie Info\n");
+        printf("[3] List Recipe Titles\n");
+        printf("[4] Scan Recipes\n");
+        printf("[5] Search Recipe by Title\n");
+        printf("[6] Generate Shopping List\n");
+        printf("[7] Scan Recipes by Ingredient\n");
+        printf("[8] Recommend Menu\n");
+        printf("[9] Return to Main Menu\n");
         printf("=========================================\n");
         printf("Enter choice: ");
         scanf("%d", &choice);
@@ -1399,24 +1428,27 @@ void AccessRecipeBox(struct recipeTag recipe[], int *recipeCount, struct FoodIte
                 ImportRecipes(recipe, recipeCount); 
                 break;
             case 2: 
-                ListRecipeTitles(recipe, *recipeCount); 
+                updLoadCalorieInfo(fooditem, fooditemCount); 
                 break;
             case 3: 
-                ScanRecipes(recipe, *recipeCount, fooditem, *fooditemCount); 
+                ListRecipeTitles(recipe, *recipeCount); 
                 break;
             case 4: 
-                SearchRecipeByTitle(recipe, *recipeCount);
+                ScanRecipes(recipe, *recipeCount, fooditem, *fooditemCount); 
                 break;
             case 5: 
-                accGenerateShoppingList(recipe, *recipeCount);
+                SearchRecipeByTitle(recipe, *recipeCount);
                 break;
             case 6: 
-                accScanRecipesByIngredients(recipe, *recipeCount, fooditem, *fooditemCount);
+                accGenerateShoppingList(recipe, *recipeCount);
                 break;
             case 7: 
-                accRecommendedMenu(recipe, *recipeCount, fooditem, *fooditemCount); 
+                accScanRecipesByIngredients(recipe, *recipeCount, fooditem, *fooditemCount);
                 break;
             case 8: 
+                accRecommendedMenu(recipe, *recipeCount, fooditem, *fooditemCount); 
+                break;
+            case 9: 
                 printf("\nReturning to Main Menu...\n");
                 *recipeCount = 0; 
                 *fooditemCount = 0;
@@ -1425,7 +1457,7 @@ void AccessRecipeBox(struct recipeTag recipe[], int *recipeCount, struct FoodIte
                 printf("\nInvalid option! Please try again.\n"); 
                 break;
         }
-    } while (choice != 8);
+    } while (choice != 9);
 }
 // end of ACCESS RECIPE BOX FUNCTIONS
 int main()
